@@ -6,244 +6,172 @@
 <title>ASI → WooCommerce Generator</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-  :root {
-    --bg: #0a0c10;
-    --surface: #111318;
-    --surface2: #1a1d24;
-    --border: #252830;
-    --accent: #00d4ff;
-    --accent2: #7c3aed;
-    --green: #10b981;
-    --red: #ef4444;
-    --yellow: #f59e0b;
-    --orange: #f97316;
-    --text: #e2e8f0;
-    --muted: #64748b;
-    --mono: 'JetBrains Mono', monospace;
-    --sans: 'DM Sans', sans-serif;
-  }
+:root {
+  --bg: #0a0c10;
+  --surface: #111318;
+  --surface2: #1a1d24;
+  --border: #252830;
+  --accent: #00d4ff;
+  --accent2: #7c3aed;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --orange: #f97316;
+  --text: #e2e8f0;
+  --muted: #64748b;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; font-size: 14px; }
 
-  header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 14px 28px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .logo { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--accent); letter-spacing: -0.5px; }
-  .logo span { color: var(--muted); }
-  .badge { background: var(--accent2); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px; font-family: var(--mono); }
-  .mock-badge { background: var(--orange); color: #000; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-family: var(--mono); display: none; animation: blink 1.8s infinite; }
-  .mock-badge.visible { display: inline; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 28px; display: flex; align-items: center; gap: 14px; }
+.logo { font-family: var(--mono); font-weight: 700; font-size: 15px; color: var(--accent); }
+.logo span { color: var(--muted); }
+.badge { background: var(--accent2); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+.mock-badge { background: var(--orange); color: #000; font-size: 10px; font-weight: 700; padding: 2px 10px; border-radius: 20px; font-family: var(--mono); display: none; }
+.mock-badge.on { display: inline; }
 
-  .main { display: grid; grid-template-columns: 350px 1fr; height: calc(100vh - 53px); }
+.main { display: grid; grid-template-columns: 350px 1fr; height: calc(100vh - 53px); }
+.sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+.section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.section-title { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
 
-  .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow-y: auto; }
+.field-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; margin-top: 10px; }
+.field-label:first-of-type { margin-top: 0; }
 
-  .section { padding: 18px 20px; border-bottom: 1px solid var(--border); }
-  .section-title { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 12px; }
+input[type="number"], select {
+  width: 100%; background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 8px 10px; border-radius: 6px;
+  font-family: var(--mono); font-size: 12px; outline: none;
+}
+input[type="number"]:focus, select:focus { border-color: var(--accent); }
+select option { background: var(--surface2); }
 
-  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 5px; margin-top: 10px; }
-  label:first-of-type { margin-top: 0; }
+/* MOCK TOGGLE */
+.mock-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+.mock-row-text .title { font-size: 13px; font-weight: 600; }
+.mock-row-text .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.toggle-track { width: 44px; height: 24px; background: var(--border); border-radius: 24px; cursor: pointer; position: relative; transition: background 0.2s; flex-shrink: 0; }
+.toggle-track.on { background: var(--orange); }
+.toggle-thumb { position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s; }
+.toggle-track.on .toggle-thumb { left: 23px; }
+.mock-note { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25); border-radius: 6px; padding: 10px; font-size: 11px; color: var(--orange); line-height: 1.6; display: none; }
+.mock-note.on { display: block; }
 
-  input[type="text"], input[type="number"], select {
-    width: 100%; background: var(--surface2); border: 1px solid var(--border);
-    color: var(--text); padding: 8px 10px; border-radius: 6px;
-    font-family: var(--mono); font-size: 12px; outline: none; transition: border-color 0.2s;
-  }
-  input[type="text"]:focus, input[type="number"]:focus, select:focus { border-color: var(--accent); }
-  select option { background: var(--surface2); }
+/* UPLOAD */
+.upload-box { border: 2px dashed var(--border); border-radius: 8px; padding: 20px; text-align: center; cursor: pointer; background: var(--surface2); transition: all 0.2s; }
+.upload-box:hover { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+.upload-box.drag { border-color: var(--accent); background: rgba(0,212,255,0.05); }
+.upload-icon { font-size: 24px; margin-bottom: 6px; }
+.upload-text { font-size: 12px; color: var(--muted); }
+.upload-name { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 6px; min-height: 16px; }
 
-  /* MOCK MODE TOGGLE */
-  .mock-toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
-  }
-  .mock-toggle-label { font-size: 13px; font-weight: 600; }
-  .mock-toggle-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .toggle-switch { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0; background: var(--border); border-radius: 24px;
-    cursor: pointer; transition: background 0.2s;
-  }
-  .toggle-slider:before {
-    content: ''; position: absolute; height: 18px; width: 18px; left: 3px; bottom: 3px;
-    background: white; border-radius: 50%; transition: transform 0.2s;
-  }
-  .toggle-switch input:checked + .toggle-slider { background: var(--orange); }
-  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); }
+.hint { background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.15); border-radius: 6px; padding: 10px; font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 10px; }
+.hint strong { color: var(--accent); }
 
-  .mock-info {
-    background: rgba(249,115,22,0.08);
-    border: 1px solid rgba(249,115,22,0.25);
-    border-radius: 6px;
-    padding: 10px;
-    font-size: 11px;
-    color: var(--orange);
-    line-height: 1.6;
-    display: none;
-  }
-  .mock-info.visible { display: block; }
+.price-logic { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: var(--mono); font-size: 11px; line-height: 1.8; color: var(--muted); margin-top: 10px; }
+.price-logic .map-ok { color: var(--green); }
+.price-logic .map-no { color: var(--yellow); }
 
-  .drop-zone {
-    border: 2px dashed var(--border); border-radius: 8px; padding: 20px 16px;
-    text-align: center; cursor: pointer; transition: all 0.2s; background: var(--surface2); position: relative;
-  }
-  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(0,212,255,0.05); }
-  .drop-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .drop-icon { font-size: 24px; margin-bottom: 6px; }
-  .drop-text { font-size: 12px; color: var(--muted); }
-  .drop-file { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 4px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; }
+.stat-val { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
+.stat-lbl { font-size: 10px; color: var(--muted); margin-top: 2px; }
 
-  .btn { width: 100%; padding: 10px 16px; border: none; border-radius: 7px; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-  .btn-primary { background: var(--accent); color: #000; }
-  .btn-primary:hover:not(:disabled) { background: #00b8d9; transform: translateY(-1px); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); margin-top: 8px; }
-  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
-  .btn-secondary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-danger { background: transparent; color: var(--red); border: 1px solid var(--red); margin-top: 8px; opacity: 0.7; }
-  .btn-danger:hover:not(:disabled) { opacity: 1; }
+.prog-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 10px; }
+.prog-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 4px; transition: width 0.4s; width: 0%; }
+.prog-text { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; }
 
-  /* PRICE LOGIC DISPLAY */
-  .price-logic {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-family: var(--mono);
-    font-size: 11px;
-    line-height: 1.8;
-    color: var(--muted);
-    margin-top: 10px;
-  }
-  .price-logic .map-line { color: var(--green); }
-  .price-logic .cost-line { color: var(--yellow); }
-  .price-logic strong { color: var(--text); }
+.btn { width: 100%; padding: 10px 16px; border: none; border-radius: 7px; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-go { background: var(--accent); color: #000; }
+.btn-go:hover:not(:disabled) { background: #00b8d9; }
+.btn-go:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-sec { background: var(--surface2); color: var(--text); border: 1px solid var(--border); margin-top: 8px; }
+.btn-sec:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.btn-sec:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-del { background: transparent; color: var(--red); border: 1px solid var(--red); margin-top: 8px; opacity: 0.7; }
+.btn-del:hover { opacity: 1; }
 
-  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .stat-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; text-align: center; }
-  .stat-value { font-family: var(--mono); font-size: 20px; font-weight: 700; color: var(--accent); }
-  .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+.content { display: flex; flex-direction: column; overflow: hidden; }
+.tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; }
+.tab { padding: 13px 18px; cursor: pointer; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; font-weight: 500; }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); }
+.tab:hover:not(.on) { color: var(--text); }
+.panel { display: none; flex: 1; overflow: hidden; flex-direction: column; }
+.panel.on { display: flex; }
 
-  .progress-bar-wrap { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 10px; }
-  .progress-bar { height: 100%; background: linear-gradient(90deg, var(--accent2), var(--accent)); border-radius: 4px; transition: width 0.4s ease; width: 0%; }
-  .progress-text { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 6px; text-align: center; }
+.logwrap { flex: 1; overflow-y: auto; padding: 14px 20px; font-family: var(--mono); font-size: 12px; background: var(--bg); }
+.logrow { display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); line-height: 1.5; }
+.logrow .t { color: var(--muted); min-width: 80px; flex-shrink: 0; }
+.logrow .m { flex: 1; word-break: break-word; color: var(--text); }
+.log-ok .m { color: var(--green); }
+.log-warn .m { color: var(--yellow); }
+.log-err .m { color: var(--red); }
+.log-url .m { color: #a78bfa; }
+.log-mock .m { color: var(--orange); }
 
-  .hint { background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.15); border-radius: 6px; padding: 10px; font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 10px; }
-  .hint strong { color: var(--accent); }
+.tbl-wrap { flex: 1; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; }
+th { background: var(--surface); padding: 10px 14px; text-align: left; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; position: sticky; top: 0; border-bottom: 1px solid var(--border); z-index: 1; }
+td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+tr:hover td { background: var(--surface2); }
 
-  .content { display: flex; flex-direction: column; overflow: hidden; }
-  .tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; }
-  .tab { padding: 13px 18px; cursor: pointer; font-size: 13px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.2s; font-weight: 500; }
-  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-  .tab:hover:not(.active) { color: var(--text); }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: var(--mono); }
+.pill-pend { background: rgba(100,116,139,0.2); color: var(--muted); }
+.pill-work { background: rgba(0,212,255,0.15); color: var(--accent); }
+.pill-done { background: rgba(16,185,129,0.15); color: var(--green); }
+.pill-fail { background: rgba(239,68,68,0.15); color: var(--red); }
+.pill-skip { background: rgba(245,158,11,0.15); color: var(--yellow); }
+.pill-mock { background: rgba(249,115,22,0.15); color: var(--orange); }
+.dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; display: inline-block; }
+.dot.pulse { animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 
-  .tab-content { display: none; flex: 1; overflow: hidden; }
-  .tab-content.active { display: flex; flex-direction: column; }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 12px; font-size: 13px; }
+.empty-icon { font-size: 48px; opacity: 0.3; }
 
-  .log-wrap { flex: 1; overflow-y: auto; padding: 14px 20px; font-family: var(--mono); font-size: 12px; background: var(--bg); }
-  .log-entry { display: flex; gap: 12px; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.03); line-height: 1.5; animation: fadeIn 0.2s ease; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; } }
-  .log-time { color: var(--muted); min-width: 80px; flex-shrink: 0; }
-  .log-icon { min-width: 16px; }
-  .log-msg { color: var(--text); flex: 1; word-break: break-word; }
-  .log-success .log-msg { color: var(--green); }
-  .log-warn .log-msg { color: var(--yellow); }
-  .log-error .log-msg { color: var(--red); }
-  .log-search .log-msg { color: #a78bfa; }
-  .log-mock .log-msg { color: var(--orange); }
-
-  .table-wrap { flex: 1; overflow: auto; }
-  table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  th { background: var(--surface); padding: 10px 14px; text-align: left; font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; position: sticky; top: 0; border-bottom: 1px solid var(--border); z-index: 1; }
-  td { padding: 9px 14px; border-bottom: 1px solid var(--border); color: var(--text); max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  tr:hover td { background: var(--surface2); }
-
-  .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; font-family: var(--mono); }
-  .pill-pending { background: rgba(100,116,139,0.2); color: var(--muted); }
-  .pill-processing { background: rgba(0,212,255,0.15); color: var(--accent); }
-  .pill-done { background: rgba(16,185,129,0.15); color: var(--green); }
-  .pill-failed { background: rgba(239,68,68,0.15); color: var(--red); }
-  .pill-skip { background: rgba(245,158,11,0.15); color: var(--yellow); }
-  .pill-mock { background: rgba(249,115,22,0.15); color: var(--orange); }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
-  .dot.pulse { animation: pulse 1.2s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--muted); gap: 12px; font-size: 13px; }
-  .empty-icon { font-size: 48px; opacity: 0.3; }
-
-  ::-webkit-scrollbar { width: 5px; height: 5px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* API key row - hide when mock */
-  .api-key-section { transition: opacity 0.2s; }
-  .api-key-section.dimmed { opacity: 0.35; pointer-events: none; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">ASI <span>→</span> WooCommerce</div>
-  <div class="badge">v4.0 — SEO</div>
-  <div class="mock-badge" id="mockBadge">🧪 MOCK MODE</div>
+  <div class="badge">v5.0</div>
+  <div class="mock-badge on" id="mockBadge">🧪 MOCK MODE</div>
 </header>
 
 <div class="main">
   <aside class="sidebar">
 
-    <!-- MOCK MODE -->
     <div class="section">
       <div class="section-title">Mode</div>
-      <div class="mock-toggle-row">
-        <div>
-          <div class="mock-toggle-label">🧪 Mock Mode</div>
-          <div class="mock-toggle-sub">Free testing — no API calls</div>
+      <div class="mock-row">
+        <div class="mock-row-text">
+          <div class="title">🧪 Mock Mode</div>
+          <div class="sub">Free testing — no API calls</div>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="mockToggle" checked onchange="toggleMock()">
-          <span class="toggle-slider"></span>
-        </label>
+        <div class="toggle-track on" id="mockTrack" onclick="toggleMock()">
+          <div class="toggle-thumb"></div>
+        </div>
       </div>
-      <div class="mock-info visible" id="mockInfo">
-        Generates realistic fake product data locally. No API key needed, no cost. Toggle off when ready for real AI generation.
-      </div>
-    </div>
-
-    <!-- API Key -->
-    <div class="section api-key-section dimmed" id="apiKeySection">
-      <div class="section-title">API Configuration</div>
-      <label>Anthropic API Key</label>
-      <input type="text" id="apiKey" placeholder="sk-ant-api03-..." />
-      <div class="hint" style="margin-top:8px;">
-        <strong>console.anthropic.com</strong> → API Keys. ~$0.01/product with web search.
+      <div class="mock-note on" id="mockNote">
+        Generates placeholder data locally. Free, instant, no API key needed. Toggle off for real AI generation.
       </div>
     </div>
 
-    <!-- Settings -->
     <div class="section">
       <div class="section-title">Settings</div>
-      <label>Batch Size (products to process)</label>
-      <input type="number" id="batchSize" value="10" min="1" max="500" />
-
-      <label>Markup — applies only when MAP is missing</label>
-      <select id="markup" onchange="updatePriceLogic()">
+      <span class="field-label">Batch Size</span>
+      <input type="number" id="batchSize" value="5" min="1" max="500" />
+      <span class="field-label">Markup (when no MAP price)</span>
+      <select id="markup" onchange="updateMarkupDisplay()">
         <option value="1.15" selected>15% over cost</option>
         <option value="1.20">20% over cost</option>
         <option value="1.25">25% over cost</option>
@@ -251,22 +179,20 @@
         <option value="1.40">40% over cost</option>
         <option value="1.50">50% over cost</option>
       </select>
-
-      <div class="price-logic" id="priceLogic">
-        <div class="map-line">✓ MAP present → use MAP price directly</div>
-        <div class="cost-line">✗ No MAP → cost × <strong id="markupDisplay">1.15</strong> = retail price</div>
+      <div class="price-logic">
+        <div class="map-ok">✓ MAP present → use MAP price</div>
+        <div class="map-no">✗ No MAP → cost × <span id="markupDisplay">1.15</span></div>
       </div>
     </div>
 
-    <!-- Upload -->
     <div class="section">
       <div class="section-title">ASI Feed Upload</div>
-      <div class="drop-zone" id="dropZone">
-        <input type="file" id="fileInput" accept=".xlsx,.csv" />
-        <div class="drop-icon">📂</div>
-        <div class="drop-text">Drop ASI export here<br><small>XLSX or CSV</small></div>
-        <div class="drop-file" id="fileName"></div>
+      <div class="upload-box" id="uploadBox">
+        <div class="upload-icon">📂</div>
+        <div class="upload-text">Click to browse or drop XLSX / CSV here</div>
+        <div class="upload-name" id="uploadName"></div>
       </div>
+      <input type="file" id="fileInput" accept=".xlsx,.csv" style="display:none" />
       <div class="hint">
         <strong>Required:</strong> ITEMID, DESCRIPTION, VENDOR, PRICE<br>
         <strong>Recommended:</strong> MAP, UPC/EAN, Vendor Website<br>
@@ -274,310 +200,111 @@
       </div>
     </div>
 
-    <!-- Stats -->
     <div class="section">
       <div class="section-title">Session Stats</div>
       <div class="stats-grid">
-        <div class="stat-box"><div class="stat-value" id="statTotal">0</div><div class="stat-label">Loaded</div></div>
-        <div class="stat-box"><div class="stat-value" id="statDone" style="color:var(--green)">0</div><div class="stat-label">Generated</div></div>
-        <div class="stat-box"><div class="stat-value" id="statFailed" style="color:var(--red)">0</div><div class="stat-label">Failed</div></div>
-        <div class="stat-box"><div class="stat-value" id="statSkip" style="color:var(--yellow)">0</div><div class="stat-label">Skipped</div></div>
+        <div class="stat-box"><div class="stat-val" id="statTotal">0</div><div class="stat-lbl">Loaded</div></div>
+        <div class="stat-box"><div class="stat-val" id="statDone" style="color:var(--green)">0</div><div class="stat-lbl">Generated</div></div>
+        <div class="stat-box"><div class="stat-val" id="statFail" style="color:var(--red)">0</div><div class="stat-lbl">Failed</div></div>
+        <div class="stat-box"><div class="stat-val" id="statSkip" style="color:var(--yellow)">0</div><div class="stat-lbl">Skipped</div></div>
       </div>
-      <div class="progress-bar-wrap" style="margin-top:12px;"><div class="progress-bar" id="progressBar"></div></div>
-      <div class="progress-text" id="progressText">Ready</div>
+      <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+      <div class="prog-text" id="progText">Ready</div>
     </div>
 
-    <!-- Controls -->
     <div class="section">
       <div class="section-title">Controls</div>
-      <button class="btn btn-primary" id="btnStart" disabled onclick="startProcessing()">▶ Generate Products</button>
-      <button class="btn btn-secondary" id="btnStop" disabled onclick="stopProcessing()">⏹ Stop</button>
-      <button class="btn btn-secondary" id="btnDownload" disabled onclick="downloadOutput()">⬇ Download WooCommerce XLSX</button>
-      <button class="btn btn-secondary" id="btnDownloadFailed" disabled onclick="downloadFailed()">⬇ Download Failed List</button>
-      <button class="btn btn-danger" onclick="resetAll()">↺ Reset All</button>
+      <button class="btn btn-go" id="btnStart" disabled onclick="startProcessing()">▶ Generate Products</button>
+      <button class="btn btn-sec" id="btnStop" disabled onclick="stopProcessing()">⏹ Stop</button>
+      <button class="btn btn-sec" id="btnDownload" disabled onclick="downloadOutput()">⬇ Download WooCommerce XLSX</button>
+      <button class="btn btn-sec" id="btnFailed" disabled onclick="downloadFailed()">⬇ Download Failed List</button>
+      <button class="btn btn-del" onclick="resetAll()">↺ Reset All</button>
     </div>
 
   </aside>
 
-  <!-- CONTENT -->
   <div class="content">
     <div class="tabs">
-      <div class="tab active" onclick="switchTab('log')">Activity Log</div>
+      <div class="tab on" onclick="switchTab('log')">Activity Log</div>
       <div class="tab" onclick="switchTab('queue')">Product Queue</div>
       <div class="tab" onclick="switchTab('preview')">Last Generated</div>
       <div class="tab" onclick="switchTab('schema')">Attribute Schemas</div>
     </div>
 
-    <div class="tab-content active" id="tab-log">
-      <div class="log-wrap" id="logWrap">
-        <div class="empty-state"><div class="empty-icon">🚀</div><div>Upload an ASI feed and click Generate to begin</div></div>
+    <div class="panel on" id="panel-log">
+      <div class="logwrap" id="logWrap">
+        <div class="empty"><div class="empty-icon">🚀</div><div>Upload an ASI feed and click Generate to begin</div></div>
       </div>
     </div>
 
-    <div class="tab-content" id="tab-queue">
-      <div class="table-wrap">
-        <div class="empty-state" id="queueEmpty"><div class="empty-icon">📋</div><div>No products loaded yet</div></div>
-        <table id="queueTable" style="display:none;">
-          <thead><tr><th>#</th><th>ITEMID</th><th>Description</th><th>Vendor</th><th>Cost</th><th>MAP</th><th>Retail</th><th>Has MAP?</th><th>Img URL?</th><th>Status</th></tr></thead>
+    <div class="panel" id="panel-queue">
+      <div class="tbl-wrap">
+        <div class="empty" id="queueEmpty"><div class="empty-icon">📋</div><div>No products loaded yet</div></div>
+        <table id="queueTable" style="display:none">
+          <thead><tr><th>#</th><th>ITEMID</th><th>Description</th><th>Vendor</th><th>Cost</th><th>MAP</th><th>Retail</th><th>Pricing</th><th>Has URL?</th><th>Status</th></tr></thead>
           <tbody id="queueBody"></tbody>
         </table>
       </div>
     </div>
 
-    <div class="tab-content" id="tab-preview">
-      <div class="table-wrap" id="previewContent">
-        <div class="empty-state"><div class="empty-icon">👁</div><div>Last generated product will appear here</div></div>
+    <div class="panel" id="panel-preview">
+      <div class="tbl-wrap" id="previewContent">
+        <div class="empty"><div class="empty-icon">👁</div><div>Last generated product will appear here</div></div>
       </div>
     </div>
 
-    <div class="tab-content" id="tab-schema">
-      <div class="table-wrap" style="padding:20px;overflow-y:auto;">
-        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:16px;">CATEGORY → ATTRIBUTE SCHEMAS</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
-          These schemas define which attribute names Claude uses for each product category. This ensures consistent, filterable WooCommerce attributes across all products. Claude fills in the <em>values</em>, but the <em>names</em> are locked by category.
-        </p>
+    <div class="panel" id="panel-schema">
+      <div class="tbl-wrap" style="padding:20px;overflow-y:auto">
+        <div style="font-family:var(--mono);font-size:10px;color:var(--muted);letter-spacing:1.5px;margin-bottom:16px">CATEGORY → ATTRIBUTE SCHEMAS</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6">These schemas define which attribute names are used per category. Claude fills in the values — the names are locked for WooCommerce filter consistency.</p>
         <div id="schemaList"></div>
       </div>
     </div>
-
   </div>
 </div>
 
 <script>
-// ─────────────────────────────────────────────────
-// CATEGORY → ATTRIBUTE SCHEMAS
-// Locked attribute names per category.
-// Claude fills values; names are standardized.
-// ─────────────────────────────────────────────────
-const ATTRIBUTE_SCHEMAS = {
-  'Networking': ['Brand','Part Number','Interface','Speed','Ports','Standards','Form Factor','Power Consumption','Operating Temperature','Warranty'],
-  'Video Cards': ['Brand','Part Number','GPU','Memory','Memory Type','Memory Interface','Core Clock','Max Resolution','Display Outputs','Form Factor','Power Connectors','TDP'],
-  'Processors': ['Brand','Part Number','Socket','Cores','Threads','Base Clock','Boost Clock','TDP','Cache','Memory Support'],
-  'Memory / RAM': ['Brand','Part Number','Type','Capacity','Speed','CAS Latency','Form Factor','ECC','Voltage','Kit Configuration'],
-  'Storage': ['Brand','Part Number','Type','Capacity','Interface','Form Factor','Read Speed','Write Speed','Cache','Warranty'],
-  'Monitors': ['Brand','Part Number','Screen Size','Resolution','Panel Type','Refresh Rate','Response Time','Inputs','Aspect Ratio','Brightness','HDR','Adjustability'],
-  'Laptops': ['Brand','Part Number','Processor','Memory','Storage','Display','Graphics','OS','Battery Life','Weight','Ports','Wireless'],
-  'Desktops': ['Brand','Part Number','Processor','Memory','Storage','Graphics','OS','Form Factor','Power Supply','Ports'],
-  'Servers': ['Brand','Part Number','Processor','Memory Slots','Max Memory','Storage Bays','Form Factor','Power Supply','RAID Support','Remote Management','OS Support'],
-  'Networking Switches': ['Brand','Part Number','Ports','Speed','PoE','Managed','VLAN Support','MAC Addresses','Form Factor','Mounting'],
-  'Wireless': ['Brand','Part Number','Standards','Frequency Bands','Max Speed','MIMO','Antennas','Ports','Security','Form Factor'],
-  'Cables & Adapters': ['Brand','Part Number','Type','Connector A','Connector B','Length','Speed/Bandwidth','Color','Certifications'],
-  'Power': ['Brand','Part Number','Wattage','Efficiency Rating','Modular','Form Factor','Input Voltage','Connectors','Certifications','Warranty'],
-  'Cooling': ['Brand','Part Number','Type','Socket Compatibility','Fan Size','Airflow','Noise Level','TDP Support','Height','Warranty'],
-  'Keyboards': ['Brand','Part Number','Type','Connection','Switch Type','Backlit','Layout','Dimensions','Weight','Compatibility'],
-  'Mice': ['Brand','Part Number','Type','Connection','DPI','Buttons','Scroll Wheel','Sensor','Weight','Compatibility'],
-  'Speakers': ['Brand','Part Number','Configuration','Frequency Response','Total Wattage','Connectivity','Inputs','Dimensions','Color'],
-  'Webcams': ['Brand','Part Number','Resolution','Frame Rate','Field of View','Focus','Microphone','Connection','Compatibility'],
-  'Software': ['Brand','Part Number','License Type','Users','Platforms','Version','Subscription','Languages','Download/Physical'],
-  'Default': ['Brand','Part Number','Model','Type','Color','Dimensions','Weight','Warranty','Compatibility'],
+// ─── ATTRIBUTE SCHEMAS ───────────────────────────
+const SCHEMAS = {
+  'Networking':         ['Brand','Part Number','Interface','Speed','Ports','Standards','Form Factor','Power Consumption','Operating Temperature','Warranty'],
+  'Video Cards':        ['Brand','Part Number','GPU','Memory','Memory Type','Memory Interface','Core Clock','Max Resolution','Display Outputs','Form Factor','Power Connectors','TDP'],
+  'Processors':         ['Brand','Part Number','Socket','Cores','Threads','Base Clock','Boost Clock','TDP','Cache','Memory Support'],
+  'Memory / RAM':       ['Brand','Part Number','Type','Capacity','Speed','CAS Latency','Form Factor','ECC','Voltage','Kit Configuration'],
+  'Storage':            ['Brand','Part Number','Type','Capacity','Interface','Form Factor','Read Speed','Write Speed','Cache','Warranty'],
+  'Monitors':           ['Brand','Part Number','Screen Size','Resolution','Panel Type','Refresh Rate','Response Time','Inputs','Aspect Ratio','Brightness','HDR','Adjustability'],
+  'Laptops':            ['Brand','Part Number','Processor','Memory','Storage','Display','Graphics','OS','Battery Life','Weight','Ports','Wireless'],
+  'Desktops':           ['Brand','Part Number','Processor','Memory','Storage','Graphics','OS','Form Factor','Power Supply','Ports'],
+  'Servers':            ['Brand','Part Number','Processor','Memory Slots','Max Memory','Storage Bays','Form Factor','Power Supply','RAID Support','Remote Management','OS Support'],
+  'Networking Switches':['Brand','Part Number','Ports','Speed','PoE','Managed','VLAN Support','MAC Addresses','Form Factor','Mounting'],
+  'Wireless':           ['Brand','Part Number','Standards','Frequency Bands','Max Speed','MIMO','Antennas','Ports','Security','Form Factor'],
+  'Cables & Adapters':  ['Brand','Part Number','Type','Connector A','Connector B','Length','Speed/Bandwidth','Color','Certifications'],
+  'Power':              ['Brand','Part Number','Wattage','Efficiency Rating','Modular','Form Factor','Input Voltage','Connectors','Certifications','Warranty'],
+  'Cooling':            ['Brand','Part Number','Type','Socket Compatibility','Fan Size','Airflow','Noise Level','TDP Support','Height','Warranty'],
+  'Keyboards':          ['Brand','Part Number','Type','Connection','Switch Type','Backlit','Layout','Dimensions','Weight','Compatibility'],
+  'Mice':               ['Brand','Part Number','Type','Connection','DPI','Buttons','Scroll Wheel','Sensor','Weight','Compatibility'],
+  'Speakers':           ['Brand','Part Number','Configuration','Frequency Response','Total Wattage','Connectivity','Inputs','Dimensions','Color'],
+  'Webcams':            ['Brand','Part Number','Resolution','Frame Rate','Field of View','Focus','Microphone','Connection','Compatibility'],
+  'Software':           ['Brand','Part Number','License Type','Users','Platforms','Version','Subscription','Languages','Download/Physical'],
+  'Default':            ['Brand','Part Number','Model','Type','Color','Dimensions','Weight','Warranty','Compatibility'],
 };
 
-function getCategorySchema(categoryHint) {
-  const lower = (categoryHint || '').toLowerCase();
-  for (const [key, attrs] of Object.entries(ATTRIBUTE_SCHEMAS)) {
-    if (lower.includes(key.toLowerCase())) return { category: key, attrs };
+function getSchema(hint) {
+  const h = (hint || '').toLowerCase();
+  for (const [k, v] of Object.entries(SCHEMAS)) {
+    if (h.includes(k.toLowerCase())) return { name: k, attrs: v };
   }
-  return { category: 'Default', attrs: ATTRIBUTE_SCHEMAS['Default'] };
+  return { name: 'Default', attrs: SCHEMAS['Default'] };
 }
 
-function renderSchemas() {
-  const container = document.getElementById('schemaList');
-  container.innerHTML = Object.entries(ATTRIBUTE_SCHEMAS).map(([cat, attrs]) => `
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px;">
-      <div style="font-family:var(--mono);color:var(--accent);font-size:12px;font-weight:700;margin-bottom:10px;">${cat}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        ${attrs.map(a => `<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;font-family:var(--mono);">${a}</span>`).join('')}
-      </div>
-    </div>
-  `).join('');
-}
-renderSchemas();
+// Render schema tab
+document.getElementById('schemaList').innerHTML = Object.entries(SCHEMAS).map(([cat, attrs]) => `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+    <div style="font-family:var(--mono);color:var(--accent);font-size:12px;font-weight:700;margin-bottom:10px">${cat}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">${attrs.map(a=>`<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 8px;font-size:11px;font-family:var(--mono)">${a}</span>`).join('')}</div>
+  </div>`).join('');
 
-// ─────────────────────────────────────────────────
-// MOCK DATA GENERATOR
-// Produces realistic IT product data without API
-// ─────────────────────────────────────────────────
-function generateMockProduct(p) {
-  const retail = (p.map && p.map > 0) ? p.map : (p.price * parseFloat(document.getElementById('markup').value || 1.15));
-  const schema = getCategorySchema(p.cat || p.description);
-  const vendor = p.vendor || 'Unknown Brand';
-  const itemid = p.itemid || p.sku || 'UNKNOWN';
-
-  // Build mock attributes using the schema
-  const mockValues = {
-    'Brand': vendor,
-    'Part Number': itemid,
-    'Model': itemid,
-    'Type': schema.category,
-    'Color': 'Black',
-    'Form Factor': 'Standard',
-    'Weight': p.weight ? p.weight + ' lbs' : 'See specifications',
-    'Dimensions': p.length ? `${p.length}" × ${p.width}" × ${p.height}"` : 'See specifications',
-    'Warranty': '1 Year Manufacturer Warranty',
-    'Compatibility': 'Windows 11/10, macOS, Linux',
-    'Interface': 'Standard',
-    'Speed': 'See specifications',
-    'Ports': 'See specifications',
-    'Standards': 'Industry Standard',
-    'Power Consumption': 'See specifications',
-    'Operating Temperature': '0°C to 40°C',
-    'GPU': 'See specifications',
-    'Memory': 'See specifications',
-    'Memory Type': 'See specifications',
-    'Memory Interface': 'See specifications',
-    'Core Clock': 'See specifications',
-    'Max Resolution': 'See specifications',
-    'Display Outputs': 'See specifications',
-    'Power Connectors': 'See specifications',
-    'TDP': 'See specifications',
-    'Socket': 'See specifications',
-    'Cores': 'See specifications',
-    'Threads': 'See specifications',
-    'Base Clock': 'See specifications',
-    'Boost Clock': 'See specifications',
-    'Cache': 'See specifications',
-    'Memory Support': 'See specifications',
-    'Capacity': 'See specifications',
-    'Read Speed': 'See specifications',
-    'Write Speed': 'See specifications',
-    'Screen Size': 'See specifications',
-    'Resolution': 'See specifications',
-    'Panel Type': 'IPS',
-    'Refresh Rate': 'See specifications',
-    'Response Time': 'See specifications',
-    'Inputs': 'See specifications',
-    'Aspect Ratio': '16:9',
-    'Brightness': 'See specifications',
-    'HDR': 'No',
-    'Adjustability': 'Tilt',
-    'Processor': 'See specifications',
-    'Storage': 'See specifications',
-    'Display': 'See specifications',
-    'Graphics': 'Integrated',
-    'OS': 'Windows 11',
-    'Battery Life': 'See specifications',
-    'Ports': 'USB-A, USB-C, HDMI',
-    'Wireless': 'Wi-Fi 6, Bluetooth 5.2',
-    'Power Supply': 'See specifications',
-    'Remote Management': 'See specifications',
-    'RAID Support': 'See specifications',
-    'Storage Bays': 'See specifications',
-    'Memory Slots': 'See specifications',
-    'Max Memory': 'See specifications',
-    'OS Support': 'See specifications',
-    'PoE': 'No',
-    'Managed': 'Unmanaged',
-    'VLAN Support': 'No',
-    'MAC Addresses': 'See specifications',
-    'Mounting': 'Desktop/Wall',
-    'Frequency Bands': '2.4GHz / 5GHz',
-    'Max Speed': 'See specifications',
-    'MIMO': 'See specifications',
-    'Antennas': 'See specifications',
-    'Security': 'WPA3',
-    'Connector A': 'See specifications',
-    'Connector B': 'See specifications',
-    'Length': p.length ? p.length + '"' : 'See specifications',
-    'Speed/Bandwidth': 'See specifications',
-    'Certifications': 'FCC, CE',
-    'Wattage': 'See specifications',
-    'Efficiency Rating': '80 Plus Bronze',
-    'Modular': 'Non-Modular',
-    'Input Voltage': '100-240V AC',
-    'Connectors': 'See specifications',
-    'Fan Size': '120mm',
-    'Airflow': 'See specifications',
-    'Noise Level': 'See specifications',
-    'TDP Support': 'See specifications',
-    'Height': p.height ? p.height + '"' : 'See specifications',
-    'Socket Compatibility': 'See specifications',
-    'Connection': 'USB',
-    'Switch Type': 'Mechanical',
-    'Backlit': 'No',
-    'Layout': 'Full Size',
-    'DPI': '800-1600 DPI',
-    'Buttons': '3 Buttons',
-    'Scroll Wheel': 'Yes',
-    'Sensor': 'Optical',
-    'Configuration': '2.0 Stereo',
-    'Frequency Response': '20Hz - 20kHz',
-    'Total Wattage': 'See specifications',
-    'Connectivity': 'Wired',
-    'Resolution': '1080p',
-    'Frame Rate': '30fps',
-    'Field of View': '90°',
-    'Focus': 'Fixed Focus',
-    'Microphone': 'Built-in',
-    'License Type': 'Perpetual',
-    'Users': '1 User',
-    'Platforms': 'Windows, macOS',
-    'Version': 'Latest',
-    'Subscription': 'No',
-    'Languages': 'English',
-    'Download/Physical': 'Download',
-    'ECC': 'No',
-    'Voltage': '1.35V',
-    'Kit Configuration': 'Single',
-    'CAS Latency': 'CL16',
-  };
-
-  const attributes = schema.attrs.map(name => ({
-    name,
-    value: mockValues[name] || 'See specifications'
-  }));
-
-  const shortDesc = `<b>${vendor} ${itemid}</b> — the ${p.description.toLowerCase().replace('retail','').trim()} engineered for reliable performance. Compatible with industry-standard configurations, this ${schema.category.toLowerCase()} product delivers the quality ${vendor} is known for. <b>[MOCK DATA]</b> Includes all necessary mounting hardware for immediate deployment.`;
-
-  const longDesc = `<p>The ${vendor} ${itemid} is a professional-grade ${schema.category.toLowerCase()} solution designed for IT professionals and power users who demand consistent, dependable performance. ${p.description.replace('Retail','').trim()}.</p>
-
-<h3>Key Features</h3>
-<ul>
-<li>Professional-grade build quality from ${vendor} — trusted by IT teams worldwide</li>
-<li>Industry-standard compatibility with leading platforms and ecosystems</li>
-<li>Engineered for ${schema.category.toLowerCase()} applications requiring high reliability</li>
-<li>Plug-and-play installation — no additional drivers required for most configurations</li>
-<li>Built to commercial-grade specifications for extended deployment</li>
-<li>Backed by ${vendor} manufacturer warranty and support</li>
-</ul>
-
-<h3>Compatibility</h3>
-<p>Compatible with all major industry-standard platforms. Designed to integrate seamlessly into existing ${schema.category.toLowerCase()} infrastructure. Consult the ${vendor} compatibility matrix or product documentation for specific system requirements.</p>
-
-<h3>What's in the Box</h3>
-<ul>
-<li>1x ${vendor} ${itemid}</li>
-<li>Quick start documentation</li>
-<li>Warranty registration card</li>
-</ul>
-
-<p>Whether you're equipping a single workstation or deploying at scale, the ${vendor} ${itemid} delivers the performance and reliability your operation requires. Ships from superspotdeals.com — authorized reseller with fast dispatch. <strong>[MOCK DATA — Replace with real content in Live Mode]</strong></p>`;
-
-  const focusKw = `${vendor} ${itemid} ${schema.category}`.substring(0, 45);
-  const mockSlug = buildSlug(vendor, itemid, schema.category.split(' ')[0]);
-  const mockImageUrl = `https://placehold.co/800x600/1a1d24/00d4ff?text=${encodeURIComponent(vendor + '%0A' + itemid)}`;
-  const mockName = `${vendor} ${itemid} - ${schema.category} Solution (MOCK)`.substring(0, 70);
-
-  return {
-    name: mockName,
-    slug: mockSlug,
-    focus_kw: focusKw,
-    short_description: shortDesc,
-    description: longDesc,
-    categories: `Electronics > ${schema.category}`,
-    tags: `${vendor},${itemid},${schema.category},IT hardware,${vendor.toLowerCase()},electronics,superspotdeals,buy ${vendor.toLowerCase()}`,
-    yoast_meta_desc: `Buy ${vendor} ${itemid} at superspotdeals.com. ${p.description.substring(0, 80).replace('Retail','')}. In stock now, ships fast.`.substring(0, 160),
-    image_url: mockImageUrl,
-    image_alt: `${vendor} ${itemid} - ${schema.category}`,
-    attributes,
-    found: true,
-    isMock: true,
-  };
-}
-
-// ─────────────────────────────────────────────────
-// WOO COLUMNS — exact names from your WC export
-// ─────────────────────────────────────────────────
-const WOO_COLUMNS = [
+// ─── WOO COLUMNS ─────────────────────────────────
+const WOO_COLS = [
   'ID','Type','SKU','GTIN, UPC, EAN, or ISBN','Name','Slug','Published',
   'Is featured?','Visibility in catalog','Short description','Description',
   'Date sale price starts','Date sale price ends','Tax status','Tax class',
@@ -590,160 +317,160 @@ const WOO_COLUMNS = [
   'Meta: _product_layout','Meta: _product_style','Meta: _total_stock_quantity',
   'Meta: _specifications_display_attributes','Meta: _specifications_attributes_title',
   'Meta: _specifications','Meta: fb_product_description','Meta: fb_visibility',
-  'Meta: _yoast_wpseo_primary_product_cat',
-  'Meta: _yoast_wpseo_metadesc','Meta: _yoast_wpseo_focuskw',
-  'Meta: _wc_gla_gtin','Meta: _wc_gla_mpn','Meta: _wc_gla_brand','Meta: _wc_gla_condition',
+  'Meta: _yoast_wpseo_primary_product_cat','Meta: _yoast_wpseo_metadesc',
+  'Meta: _yoast_wpseo_focuskw','Meta: _wc_gla_gtin','Meta: _wc_gla_mpn',
+  'Meta: _wc_gla_brand','Meta: _wc_gla_condition',
   'Meta: _manufacturer_pn','Meta: _vendor','Meta: _map_price',
   'Image ALT Text (reference)',
 ];
 for (let i = 1; i <= 20; i++) {
-  WOO_COLUMNS.push(`Attribute ${i} name`,`Attribute ${i} value(s)`,`Attribute ${i} visible`,`Attribute ${i} global`);
+  WOO_COLS.push(`Attribute ${i} name`,`Attribute ${i} value(s)`,`Attribute ${i} visible`,`Attribute ${i} global`);
 }
 
-// ─────────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────────
-let products = [], results = [], failedProducts = [];
-let isRunning = false, shouldStop = false;
-let logEmpty = true;
+// ─── STATE ───────────────────────────────────────
+let products = [], results = [], failed = [];
+let running = false, stopping = false, logEmpty = true;
+let mockOn = true;
 
-// ─────────────────────────────────────────────────
-// TOGGLE MOCK
-// ─────────────────────────────────────────────────
+// ─── MOCK TOGGLE ─────────────────────────────────
 function toggleMock() {
-  const on = document.getElementById('mockToggle').checked;
-  document.getElementById('mockInfo').classList.toggle('visible', on);
-  document.getElementById('mockBadge').classList.toggle('visible', on);
-  document.getElementById('apiKeySection').classList.toggle('dimmed', on);
+  mockOn = !mockOn;
+  const track = document.getElementById('mockTrack');
+  const note  = document.getElementById('mockNote');
+  const badge = document.getElementById('mockBadge');
+  track.classList.toggle('on', mockOn);
+  note.classList.toggle('on', mockOn);
+  badge.classList.toggle('on', mockOn);
 }
-toggleMock();
 
-// ─────────────────────────────────────────────────
-// PRICE LOGIC DISPLAY
-// ─────────────────────────────────────────────────
-function updatePriceLogic() {
+// ─── MARKUP DISPLAY ──────────────────────────────
+function updateMarkupDisplay() {
   document.getElementById('markupDisplay').textContent = document.getElementById('markup').value;
 }
 
-// ─────────────────────────────────────────────────
-// FILE UPLOAD
-// ─────────────────────────────────────────────────
-const dropZone = document.getElementById('dropZone');
+// ─── FILE UPLOAD ─────────────────────────────────
+const uploadBox = document.getElementById('uploadBox');
 const fileInput = document.getElementById('fileInput');
-dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop', e => { e.preventDefault(); dropZone.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
-fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
 
-function handleFile(file) {
-  if (!file) return;
-  document.getElementById('fileName').textContent = file.name;
+uploadBox.addEventListener('click', () => fileInput.click());
+uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.classList.add('drag'); });
+uploadBox.addEventListener('dragleave', () => uploadBox.classList.remove('drag'));
+uploadBox.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadBox.classList.remove('drag');
+  if (e.dataTransfer.files[0]) processFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', e => {
+  if (e.target.files[0]) processFile(e.target.files[0]);
+});
+
+function processFile(file) {
+  document.getElementById('uploadName').textContent = file.name;
   const reader = new FileReader();
-  reader.onload = e => {
+  reader.onload = ev => {
     try {
-      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const wb = XLSX.read(ev.target.result, { type: 'array' });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
-      parseProducts(rows, file.name);
-    } catch (err) { log('error','❌','Failed to parse file: ' + err.message); }
+      loadProducts(rows, file.name);
+    } catch(e) {
+      addLog('err','❌','Failed to read file: ' + e.message);
+    }
   };
   reader.readAsArrayBuffer(file);
 }
 
-function parseProducts(rows, filename) {
-  const sampleRow = rows[0] || {};
-  const keys = Object.keys(sampleRow);
-  function findCol(candidates) {
+function loadProducts(rows, filename) {
+  const sample = rows[0] || {};
+  const keys = Object.keys(sample);
+
+  function col(candidates) {
     for (const c of candidates) {
-      const k = keys.find(k => k.toLowerCase().replace(/[\s_\-\/]/g,'').includes(c.toLowerCase().replace(/[\s_\-\/]/g,'')));
-      if (k) return k;
+      const found = keys.find(k => k.toLowerCase().replace(/[\s_\-\/]/g,'').includes(c.toLowerCase().replace(/[\s_\-\/]/g,'')));
+      if (found) return found;
     }
     return null;
   }
-  const colMap = {
-    sku:       findCol(['SKU']),
-    itemid:    findCol(['ITEMID','Item ID']),
-    desc:      findCol(['DESCRIPTION','DESC']),
-    vendor:    findCol(['VENDOR','BRAND','MANUFACTURER','MFR']),
-    vendorurl: findCol(['VendorWebsite','Vendor Website','VENDORURL','MANUFACTURERURL','MFR URL']),
-    imageurl:  findCol(['Image URL','ImageURL','Image','IMAGEURL']),
-    cat:       findCol(['CAT','CATEGORY','Category']),
-    price:     findCol(['PRICE','COST','Cost']),
-    weight:    findCol(['Weight','WEIGHT']),
-    status:    findCol(['STATUS','Status']),
-    map:       findCol(['MAP']),
-    upc:       findCol(['UPC','EAN','UPCEAN','UPC/EAN','GTIN']),
-    length:    findCol(['LENGTH','Length']),
-    width:     findCol(['WIDTH','Width']),
-    height:    findCol(['HEIGHT','Height']),
+
+  const C = {
+    sku:      col(['SKU']),
+    itemid:   col(['ITEMID','ItemID','Item ID']),
+    desc:     col(['DESCRIPTION','DESC']),
+    vendor:   col(['VENDOR','BRAND','MANUFACTURER']),
+    url:      col(['VendorWebsite','Vendor Website','VENDORURL','MANUFACTURERURL']),
+    imgurl:   col(['Image URL','ImageURL','IMAGEURL']),
+    cat:      col(['CAT','CATEGORY','Category']),
+    price:    col(['PRICE','COST','Cost']),
+    weight:   col(['Weight','WEIGHT']),
+    status:   col(['STATUS','Status']),
+    map:      col(['MAP']),
+    upc:      col(['UPC','EAN','UPC/EAN','GTIN']),
+    length:   col(['LENGTH','Length']),
+    width:    col(['WIDTH','Width']),
+    height:   col(['HEIGHT','Height']),
   };
 
-  const markup = parseFloat(document.getElementById('markup').value) || 1.15;
-  const batchSize = parseInt(document.getElementById('batchSize').value) || 10;
+  const markup   = parseFloat(document.getElementById('markup').value) || 1.15;
+  const batchSz  = parseInt(document.getElementById('batchSize').value) || 5;
 
   products = rows
     .filter(r => {
-      const status = colMap.status ? String(r[colMap.status] || '').toUpperCase() : 'ACTIVE';
-      return status === 'ACTIVE' || status === '' || !colMap.status;
+      const s = C.status ? String(r[C.status]||'').toUpperCase() : 'ACTIVE';
+      return s === 'ACTIVE' || s === '' || !C.status;
     })
-    .slice(0, batchSize)
+    .slice(0, batchSz)
     .map((r, i) => {
-      const cost  = colMap.price  ? parseFloat(r[colMap.price])  || 0 : 0;
-      const map   = colMap.map    ? parseFloat(r[colMap.map])    || 0 : 0;
-      const retail = (map > 0) ? map : (cost * markup);
+      const cost   = C.price  ? parseFloat(r[C.price])  || 0 : 0;
+      const map    = C.map    ? parseFloat(r[C.map])    || 0 : 0;
+      const retail = map > 0  ? map : cost * markup;
       return {
-        idx: i,
-        sku:        colMap.sku       ? String(r[colMap.sku] || '').trim() : '',
-        itemid:     colMap.itemid    ? String(r[colMap.itemid] || '').trim() : '',
-        description: colMap.desc    ? String(r[colMap.desc] || '').trim() : '',
-        vendor:     colMap.vendor    ? String(r[colMap.vendor] || '').trim() : '',
-        vendorUrl:  colMap.vendorurl ? String(r[colMap.vendorurl] || '').trim() : '',
-        imageUrl:   colMap.imageurl  ? String(r[colMap.imageurl] || '').trim() : '',
-        cat:        colMap.cat       ? String(r[colMap.cat] || '').trim() : '',
-        price: cost, map, retail,
-        weight:  colMap.weight ? parseFloat(r[colMap.weight]) || '' : '',
-        upc:     colMap.upc    ? String(r[colMap.upc] || '').trim() : '',
-        length:  colMap.length ? parseFloat(r[colMap.length]) || '' : '',
-        width:   colMap.width  ? parseFloat(r[colMap.width])  || '' : '',
-        height:  colMap.height ? parseFloat(r[colMap.height]) || '' : '',
-        status: 'pending',
+        i, cost, map, retail,
+        sku:      C.sku     ? str(r[C.sku])    : '',
+        itemid:   C.itemid  ? str(r[C.itemid]) : '',
+        desc:     C.desc    ? str(r[C.desc])   : '',
+        vendor:   C.vendor  ? str(r[C.vendor]) : '',
+        url:      C.url     ? str(r[C.url])    : '',
+        imgurl:   C.imgurl  ? str(r[C.imgurl]) : '',
+        cat:      C.cat     ? str(r[C.cat])    : '',
+        weight:   C.weight  ? parseFloat(r[C.weight]) || '' : '',
+        upc:      C.upc     ? str(r[C.upc])    : '',
+        length:   C.length  ? parseFloat(r[C.length]) || '' : '',
+        width:    C.width   ? parseFloat(r[C.width])  || '' : '',
+        height:   C.height  ? parseFloat(r[C.height]) || '' : '',
       };
     });
 
   document.getElementById('statTotal').textContent = products.length;
-  ['statDone','statFailed','statSkip'].forEach(id => document.getElementById(id).textContent = 0);
+  ['statDone','statFail','statSkip'].forEach(id => document.getElementById(id).textContent = 0);
   renderQueue();
   document.getElementById('btnStart').disabled = false;
   clearLog();
-  log('info','📄', `Loaded ${products.length} products from ${filename}`);
-  if (!colMap.map) log('warn','⚠️','No MAP column found — using markup for all products');
-  if (!colMap.vendorurl) log('info','💡','No "Vendor Website" column — add one for better spec accuracy in live mode');
-  if (!colMap.imageurl) log('info','🖼','No "Image URL" column — images will be sourced via web search in live mode');
+  addLog('info','📄',`Loaded ${products.length} products from ${filename}`);
+  if (!C.map)    addLog('warn','⚠️','No MAP column — markup applied to all products');
+  if (!C.url)    addLog('info','💡','No Vendor Website column — add one for best results in Live Mode');
+  if (!C.imgurl) addLog('info','🖼','No Image URL column — images sourced from manufacturer page in Live Mode');
 }
 
-// ─────────────────────────────────────────────────
-// QUEUE TABLE
-// ─────────────────────────────────────────────────
+// ─── QUEUE TABLE ─────────────────────────────────
 function renderQueue() {
   const tbody = document.getElementById('queueBody');
   tbody.innerHTML = '';
-  const markup = parseFloat(document.getElementById('markup').value) || 1.15;
   products.forEach((p, i) => {
     const hasMap = p.map > 0;
-    const hasImg = !!p.imageUrl;
+    const hasUrl = !!p.url;
     const tr = document.createElement('tr');
-    tr.id = `row-${i}`;
+    tr.id = 'qrow-' + i;
     tr.innerHTML = `
       <td>${i+1}</td>
       <td style="font-family:var(--mono);color:var(--accent)">${esc(p.itemid||p.sku)}</td>
-      <td title="${esc(p.description)}">${esc(p.description.substring(0,50))}${p.description.length>50?'…':''}</td>
+      <td title="${esc(p.desc)}">${esc(p.desc.substring(0,48))}${p.desc.length>48?'…':''}</td>
       <td>${esc(p.vendor)}</td>
-      <td style="font-family:var(--mono)">$${p.price.toFixed(2)}</td>
+      <td style="font-family:var(--mono)">$${p.cost.toFixed(2)}</td>
       <td style="font-family:var(--mono);color:${hasMap?'var(--green)':'var(--muted)'}">${hasMap?'$'+p.map.toFixed(2):'—'}</td>
       <td style="font-family:var(--mono);color:var(--yellow)">$${p.retail.toFixed(2)}</td>
       <td>${hasMap?'<span style="color:var(--green)">✓ MAP</span>':'<span style="color:var(--muted)">markup</span>'}</td>
-      <td>${hasImg?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--muted)">—</span>'}</td>
-      <td><span class="status-pill pill-pending" id="pill-${i}"><span class="dot"></span>Pending</span></td>
+      <td>${hasUrl?'<span style="color:var(--green)">✓</span>':'<span style="color:var(--muted)">—</span>'}</td>
+      <td><span class="pill pill-pend" id="pill-${i}"><span class="dot"></span> Pending</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -751,547 +478,379 @@ function renderQueue() {
   document.getElementById('queueTable').style.display = '';
 }
 
-function updateRowStatus(idx, status, text) {
-  const pill = document.getElementById(`pill-${idx}`);
-  if (!pill) return;
-  const map = { pending:'pill-pending', processing:'pill-processing', done:'pill-done', failed:'pill-failed', skip:'pill-skip', mock:'pill-mock' };
-  pill.className = `status-pill ${map[status]||'pill-pending'}`;
-  const pulse = status === 'processing' ? ' pulse' : '';
-  pill.innerHTML = `<span class="dot${pulse}"></span>${text||status}`;
+function setPill(i, cls, txt) {
+  const p = document.getElementById('pill-'+i);
+  if (!p) return;
+  p.className = 'pill ' + cls;
+  const pulse = cls === 'pill-work' ? ' pulse' : '';
+  p.innerHTML = `<span class="dot${pulse}"></span> ${txt}`;
 }
 
-// ─────────────────────────────────────────────────
-// MAIN PROCESSING LOOP
-// ─────────────────────────────────────────────────
+// ─── PROCESSING ──────────────────────────────────
 async function startProcessing() {
-  const isMock = document.getElementById('mockToggle').checked;
-  const apiKey = document.getElementById('apiKey').value.trim();
-  if (!isMock && !apiKey) { alert('Enter your Anthropic API key, or enable Mock Mode for free testing.'); return; }
   if (!products.length) { alert('Upload an ASI feed first.'); return; }
-
-  isRunning = true; shouldStop = false; results = []; failedProducts = [];
+  running = true; stopping = false; results = []; failed = [];
   document.getElementById('btnStart').disabled = true;
   document.getElementById('btnStop').disabled = false;
   document.getElementById('btnDownload').disabled = true;
-  document.getElementById('btnDownloadFailed').disabled = true;
+  document.getElementById('btnFailed').disabled = true;
   clearLog();
 
-  if (isMock) {
-    log('mock','🧪',`MOCK MODE — generating ${products.length} products locally (no API cost)`);
-  } else {
-    log('info','🚀',`LIVE MODE — processing ${products.length} products via Claude API + web search`);
-  }
+  addLog(mockOn ? 'mock' : 'info', mockOn ? '🧪' : '🚀',
+    mockOn
+      ? `MOCK MODE — generating ${products.length} products locally (free)`
+      : `LIVE MODE — processing ${products.length} products via Claude API`
+  );
 
-  let done = 0, failed = 0, skipped = 0;
+  let done = 0, fails = 0, skips = 0;
 
   for (let i = 0; i < products.length; i++) {
-    if (shouldStop) { log('warn','⏹','Stopped by user'); break; }
+    if (stopping) { addLog('warn','⏹','Stopped'); break; }
     const p = products[i];
-    updateRowStatus(i, 'processing', 'Working…');
-    updateProgress(i, products.length);
-    log('info','📦',`[${i+1}/${products.length}] ${p.vendor} ${p.itemid||p.sku}`);
+    setPill(i, 'pill-work', 'Working…');
+    setProgress(i, products.length);
+    addLog('info','📦',`[${i+1}/${products.length}] ${p.vendor} ${p.itemid||p.sku}`);
 
     try {
-      let parsed;
-      if (isMock) {
-        await sleep(120); // simulate processing time
-        parsed = generateMockProduct(p);
-        log('mock','🧪',`Mock generated: ${parsed.name.substring(0,60)}`);
-      } else {
-        parsed = await callClaudeAPI(p, apiKey);
-      }
+      let parsed = mockOn ? mockProduct(p) : await callAPI(p);
+      await sleep(mockOn ? 100 : 0);
 
       if (!parsed || !parsed.found) {
-        skipped++;
-        failedProducts.push(p);
-        updateRowStatus(i, 'skip', 'Skipped');
-        document.getElementById('statSkip').textContent = skipped;
-        log('warn','⚠️',`No data found: ${p.vendor} ${p.itemid}`);
+        skips++;
+        failed.push(p);
+        setPill(i, 'pill-skip', 'Skipped');
+        document.getElementById('statSkip').textContent = skips;
+        addLog('warn','⚠️',`No data: ${p.vendor} ${p.itemid}`);
         continue;
       }
 
-      const wooRow = buildWooRow(p, parsed);
-      results.push(wooRow);
+      const row = buildRow(p, parsed);
+      results.push(row);
       done++;
-      updateRowStatus(i, isMock ? 'mock' : 'done', isMock ? '🧪 Mock' : 'Done ✓');
+      setPill(i, mockOn ? 'pill-mock' : 'pill-done', mockOn ? '🧪 Mock' : 'Done ✓');
       document.getElementById('statDone').textContent = done;
-      if (!isMock) log('success','✅',`Generated: ${parsed.name}`);
-      updatePreview(wooRow, parsed.isMock);
+      if (mockOn) addLog('mock','🧪',`Mock: ${parsed.name.substring(0,55)}`);
+      else addLog('ok','✅',`Generated: ${parsed.name}`);
+      showPreview(row, mockOn);
 
-    } catch (err) {
-      failed++;
-      failedProducts.push(p);
-      updateRowStatus(i, 'failed', 'Error');
-      document.getElementById('statFailed').textContent = failed;
-      log('error','❌',`Error: ${err.message}`);
+    } catch(e) {
+      fails++;
+      failed.push(p);
+      setPill(i, 'pill-fail', 'Error');
+      document.getElementById('statFail').textContent = fails;
+      addLog('err','❌',`Error: ${e.message}`);
     }
 
-    if (i < products.length - 1 && !shouldStop) await sleep(isMock ? 80 : 900);
+    if (i < products.length - 1 && !stopping) {
+      if (!mockOn) {
+        const wait = p.url ? 3000 : 8000;
+        addLog('info','⏱',`Waiting ${p.url?'3':'8'}s…`);
+        await sleep(wait);
+      }
+    }
   }
 
-  isRunning = false;
-  updateProgress(products.length, products.length);
+  running = false;
+  setProgress(products.length, products.length);
   document.getElementById('btnStop').disabled = true;
   document.getElementById('btnStart').disabled = false;
-
   if (results.length > 0) {
     document.getElementById('btnDownload').disabled = false;
-    log('success','🎉',`Done! ${results.length} products ready to download.`);
-    if (isMock) log('mock','🧪','Mock data generated. Verify column mapping imports correctly, then switch to Live Mode for real content.');
+    addLog('ok','🎉',`Done! ${results.length} products ready to download.`);
   }
-  if (failedProducts.length > 0) document.getElementById('btnDownloadFailed').disabled = false;
+  if (failed.length > 0) document.getElementById('btnFailed').disabled = false;
 }
 
 function stopProcessing() {
-  shouldStop = true;
+  stopping = true;
   document.getElementById('btnStop').disabled = true;
 }
 
-// ─────────────────────────────────────────────────
-// CLAUDE API (LIVE MODE)
-// ─────────────────────────────────────────────────
-async function callClaudeAPI(p, apiKey) {
-  const schema = getCategorySchema(p.cat || p.description);
-  const retail = p.retail;
-  const prompt = buildPrompt(p, retail, schema);
+// ─── CLAUDE API ──────────────────────────────────
+async function callAPI(p) {
+  const schema = getSchema(p.cat || p.desc);
+  const hasUrl = !!p.url;
+  const prompt = buildPrompt(p, schema, hasUrl);
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+  if (hasUrl) addLog('url','🔗',`Using vendor URL for ${p.vendor} ${p.itemid}`);
+  else        addLog('url','🔍',`No vendor URL — web search for ${p.vendor} ${p.itemid}`);
+
+  const body = {
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2000,
+    messages: [{ role: 'user', content: prompt }]
+  };
+  if (!hasUrl) body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+
+  const resp = await fetch('./proxy.php', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 2000,
-      tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-      messages: [{ role: 'user', content: prompt }]
-    })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
   });
 
   if (!resp.ok) {
-    const err = await resp.json().catch(() => ({}));
-    throw new Error(err?.error?.message || `API ${resp.status}`);
+    const e = await resp.json().catch(()=>({}));
+    throw new Error(e?.error?.message || `Proxy error ${resp.status}`);
   }
-  const data = await resp.json();
-  const didSearch = data.content.some(b => b.type === 'tool_use' && b.name === 'web_search');
-  if (didSearch) log('search','🔍',`Web search used for ${p.vendor} ${p.itemid}`);
 
+  const data = await resp.json();
   const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
   if (!text || text.length < 50) return { found: false };
 
   try {
-    const m = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*"name"[\s\S]*?\})/);
-    const raw = m ? (m[1] || m[0]) : text;
+    const m = text.match(/```json\s*([\s\S]*?)```/) || text.match(/(\{[\s\S]*?"name"[\s\S]*?\})/);
+    const raw = m ? (m[1]||m[0]) : text;
     return JSON.parse(raw.replace(/```json|```/g,'').trim());
-  } catch {
-    return { found: false };
-  }
+  } catch { return { found: false }; }
 }
 
-function buildSlug(brand, productName, compatibility) {
-  const parts = [brand, productName, compatibility].filter(Boolean).join(' ');
-  return parts.toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .substring(0, 80);
-}
-
-function buildPrompt(p, retail, schema) {
+// ─── PROMPT ──────────────────────────────────────
+function buildPrompt(p, schema, hasUrl) {
   const attrList = schema.attrs.join(', ');
-  const vendorLine = p.vendorUrl ? `\nManufacturer URL: ${p.vendorUrl} — fetch this page for exact specs, compatibility info, and official image URLs` : '';
-  const imgLine = p.imageUrl ? `\nPre-supplied Image URL: ${p.imageUrl}` : '';
+  const research = hasUrl
+    ? `RESEARCH: Fetch this manufacturer page — it has all specs, compatibility, and images:\n${p.url}\nDo NOT use web search — the URL above is sufficient.`
+    : `RESEARCH: Search "${p.vendor} ${p.itemid||p.sku} specifications" for specs, compatibility, and an official product image URL.`;
 
-  return `You are a senior SEO content strategist and product copywriter for superspotdeals.com — a WooCommerce IT hardware and electronics retailer competing with Newegg and Amazon. Your content must rank organically AND convert buyers.
+  return `You are an SEO copywriter for superspotdeals.com, a WooCommerce IT hardware retailer. Generate complete product page content.
 
-═══════════════════════════════════════
-PRODUCT DATA FROM SUPPLIER FEED
-═══════════════════════════════════════
-Part Number (ITEMID): ${p.itemid || p.sku}
-Brand: ${p.vendor}
-Raw supplier description: ${p.description}
-Retail price: $${retail.toFixed(2)}${p.map > 0 ? ' (MAP-enforced minimum)' : ''}${vendorLine}${imgLine}
-UPC: ${p.upc || 'unknown'}
-Category code: ${p.cat || 'unknown'}
-Dimensions from feed: ${p.length ? `${p.length}"L × ${p.width}"W × ${p.height}"H` : 'not provided'}
-Weight: ${p.weight ? p.weight + ' lbs' : 'not provided'}
+PRODUCT:
+- Part Number: ${p.itemid||p.sku}
+- Brand: ${p.vendor}
+- Supplier description: ${p.desc}
+- Retail price: $${p.retail.toFixed(2)}${p.map>0?' (MAP minimum)':''}
+- UPC: ${p.upc||'unknown'}
+- Category: ${p.cat||'unknown'}
+- Dimensions: ${p.length?`${p.length}"L × ${p.width}"W × ${p.height}"H`:'not provided'}
+- Weight: ${p.weight?p.weight+' lbs':'not provided'}
 
-═══════════════════════════════════════
-STEP 1 — RESEARCH (do this before writing anything)
-═══════════════════════════════════════
-1. Search: "${p.vendor} ${p.itemid || p.sku} specifications"
-2. If Manufacturer URL is provided above, fetch that page directly — it is the single best source of truth for specs, compatibility, and images
-3. Search for official product images — WebP format is fine, any CDN URL works
-4. Identify: what devices/systems is this compatible with? What problem does it solve? Who buys it?
+${research}
 
-═══════════════════════════════════════
-STEP 2 — SEO CONTENT RULES (follow exactly)
-═══════════════════════════════════════
+SEO RULES:
+FOCUS KEYPHRASE: 3-5 words, Brand+Model+key term. Must appear in title, short desc sentence 1, long desc opening, AND meta desc.
+TITLE: [Brand] [Product Name] for [Compatible Device] ([Part#]) — 60-70 chars, proper case, strip "Retail/OEM/TAA/Bulk"
+SLUG: [brand]-[product-name]-[compatibility] — lowercase hyphens, no part numbers, max 60 chars
+SHORT DESC (3 sentences HTML): 1) <b>Focus KW</b> + what it is + compatible device  2) Core benefit  3) What's included
+LONG DESC (300-400 words): <p>Opening with focus KW</p> <h3>Key Features</h3><ul>6-8 benefit bullets</ul> <h3>Compatibility</h3><p>all compatible products</p> <h3>What's in the Box</h3><ul>items</ul> <p>Closing use-case + trust signal</p>
+META DESC: 150-160 chars, focus KW present, ends with "Shop superspotdeals.com." or "In stock now."
+TAGS: 8-10 comma-separated: brand, part#, product name, compatible device, category, use-cases, superspotdeals
+ATTRIBUTES: Use EXACT names — category: ${schema.name}, required: ${attrList}. Always add "Compatibility" and "What's in the Box".
 
-**FOCUS KEYPHRASE — pick ONE, it must be:**
-- Long-tail, 3-5 words: Brand + Model + key descriptor (e.g. "MOZA mBooster Extension Plate CRP2")
-- NOT a generic category term (e.g. NOT "sim racing accessories")
-- Searchable: someone shopping for this specific product would type it
-- The focus keyphrase MUST appear verbatim in: title, short description sentence 1, long description opening paragraph, AND meta description
-
-**TITLE (product name) — rules:**
-- Formula: [Brand] [Product Name] for [Compatible Device/Ecosystem] ([Part Number])
-- 60-70 characters
-- Proper title case — not ALL CAPS
-- Strip supplier filler words: "Retail", "OEM", "TAA", "Brown Box", "Bulk"
-- Compatibility term (e.g. "for CRP2 Pedals", "for LGA1700", "for PCIe 4.0") is the most important addition
-- Part number in parentheses at end for technical buyers searching by model
-
-**SLUG — rules:**
-- Formula: [brand]-[product-name]-[key-compatibility-term]
-- All lowercase, hyphens only, no part numbers, no "retail"
-- Max 60 characters
-- Example: "moza-racing-mbooster-extension-plate-crp2"
-
-**SHORT DESCRIPTION — 3 sentences, HTML allowed:**
-- Sentence 1: Focus keyphrase in first 10 words + what it is + primary compatible device. Use <b>focus keyphrase</b> bold.
-- Sentence 2: The core problem it solves or primary benefit — why does the buyer need this?
-- Sentence 3: What's included / ready to install signal (e.g. "Includes M6×10 and M12×20 mounting hardware for tool-ready installation.")
-
-**LONG DESCRIPTION — 300-400 words, structured HTML:**
-Must follow this exact 5-section structure:
-
-<p>[Opening paragraph: focus keyphrase in first 100 characters. 2-3 sentences establishing what the product is, who it's for, and the key use case. Write for both Google and the IT professional/enthusiast buyer.]</p>
-
-<h3>Key Features</h3>
-<ul>
-<li>[Benefit-led bullet — lead with the outcome, not the spec. E.g. "Rock-solid pedal mounting — eliminates flex and vibration during aggressive sim racing sessions"]</li>
-[6-8 bullets total, mixing benefits and specs]
-</ul>
-
-<h3>Compatibility</h3>
-<p>[Explicitly name every compatible product, ecosystem, platform, or standard. This is your long-tail keyword goldmine. E.g. "Designed specifically for the MOZA mBooster Active Pedal and CRP2 Racing Pedals base. Compatible with all MOZA Racing cockpit rigs and standard 80/40 aluminum profile sim rigs."]</p>
-
-<h3>What's in the Box</h3>
-<ul>
-<li>[List every included item with quantity and spec where known]</li>
-</ul>
-
-<p>[Closing paragraph: 2 sentences. Use-case/lifestyle language that captures long-tail searches. E.g. "Whether you're building a dedicated sim racing cockpit or upgrading an existing rig, the MOZA mBooster Extension Plate delivers the precision mounting your setup deserves." End with a trust signal: fast shipping, authorized dealer, etc.]</p>
-
-**META DESCRIPTION — strict rules:**
-- 150-160 characters exactly
-- Must contain focus keyphrase
-- Must end with a CTA: "Shop superspotdeals.com.", "Ships fast.", or "In stock now."
-- No duplicate of the title — add new information (price anchor, compatibility, what's included)
-
-**TAGS — 8-10 tags:**
-Brand name, part number, product name without brand, compatible device/platform, product category, primary use case, secondary use case, "superspotdeals"
-
-**IMAGE ALT TEXT:**
-Formula: [Brand] [Product Name] - [key compatibility term]
-Example: "MOZA Racing mBooster Base Extension Plate - CRP2 Pedals"
-
-═══════════════════════════════════════
-STEP 3 — ATTRIBUTES (use EXACT names below)
-═══════════════════════════════════════
-Category: ${schema.category}
-Required attribute names (DO NOT rename these): ${attrList}
-
-Add these two attributes always, in addition to the schema:
-- "Compatibility" → list all compatible products/systems found during research
-- "What's in the Box" → comma-separated list of included items
-
-═══════════════════════════════════════
-RETURN FORMAT — ONLY valid JSON, nothing else
-═══════════════════════════════════════
+Return ONLY valid JSON:
 \`\`\`json
-{
-  "found": true,
-  "name": "Title per formula above — 60-70 chars",
-  "slug": "slug-per-formula-above",
-  "focus_kw": "3-5 word long-tail keyphrase",
-  "short_description": "HTML 3 sentences per formula",
-  "description": "Full structured HTML per 5-section formula — 300-400 words",
-  "categories": "Category > Subcategory path",
-  "tags": "tag1,tag2,tag3,tag4,tag5,tag6,tag7,tag8",
-  "yoast_meta_desc": "150-160 char meta desc with focus keyphrase + CTA",
-  "image_url": "Direct URL to best official product image found, or empty string",
-  "image_alt": "[Brand] [Product Name] - [compatibility term]",
-  "attributes": [
-    {"name": "Brand", "value": "${p.vendor}"},
-    {"name": "Part Number", "value": "${p.itemid || p.sku}"},
-    {"name": "Compatibility", "value": "from research"},
-    {"name": "What's in the Box", "value": "from research"},
-    ${schema.attrs.filter(a => a !== 'Brand' && a !== 'Part Number').map(a => `{"name": "${a}", "value": "from research"}`).join(',\n    ')}
-  ]
-}
+{"found":true,"name":"title","slug":"slug","focus_kw":"keyphrase","short_description":"HTML","description":"HTML","categories":"Cat > Sub","tags":"t1,t2,t3","yoast_meta_desc":"150-160 chars","image_url":"url or empty","image_alt":"Brand Product - compatibility","attributes":[{"name":"Brand","value":"${p.vendor}"},{"name":"Part Number","value":"${p.itemid||p.sku}"},{"name":"Compatibility","value":"from research"},{"name":"What's in the Box","value":"from research"}${schema.attrs.filter(a=>a!=='Brand'&&a!=='Part Number').map(a=>`{"name":"${a}","value":"from research"}`).join(',')}]}
 \`\`\`
-
-If product cannot be found after all research attempts: {"found": false, "name": ""}`;
+If not found: {"found":false,"name":""}`;
 }
 
-// ─────────────────────────────────────────────────
-// BUILD WOO ROW
-// ─────────────────────────────────────────────────
-function buildWooRow(p, parsed) {
+// ─── MOCK PRODUCT ────────────────────────────────
+function mockProduct(p) {
+  const schema = getSchema(p.cat || p.desc);
+  const vendor = p.vendor || 'Brand';
+  const id     = p.itemid || p.sku || 'UNKNOWN';
+  const slug   = makeSlug(vendor + ' ' + id + ' ' + schema.name.split(' ')[0]);
+
+  const attrs = [
+    { name: 'Brand',            value: vendor },
+    { name: 'Part Number',      value: id },
+    { name: 'Compatibility',    value: '[MOCK] See manufacturer page' },
+    { name: "What's in the Box",value: `[MOCK] 1x ${vendor} ${id}, documentation` },
+    ...schema.attrs.filter(a => a!=='Brand' && a!=='Part Number').map(a => ({ name: a, value: '[MOCK] See specifications' }))
+  ];
+
+  return {
+    found: true, isMock: true,
+    name:              `${vendor} ${id} - ${schema.name} (MOCK)`.substring(0,70),
+    slug,
+    focus_kw:          `${vendor} ${id}`.substring(0,45),
+    short_description: `<b>${vendor} ${id}</b> — ${p.desc.replace(/retail/gi,'').trim()}. [MOCK DATA] Compatible with industry-standard platforms. Includes all necessary hardware for immediate deployment.`,
+    description:       `<p>The ${vendor} ${id} is a ${schema.name.toLowerCase()} solution. ${p.desc.replace(/retail/gi,'').trim()}.</p><h3>Key Features</h3><ul><li>Professional-grade quality from ${vendor}</li><li>Industry-standard compatibility</li><li>Easy installation</li><li>Manufacturer warranty included</li></ul><h3>Compatibility</h3><p>[MOCK] Compatible with major industry platforms. See manufacturer documentation for full compatibility list.</p><h3>What's in the Box</h3><ul><li>1x ${vendor} ${id}</li><li>Documentation</li></ul><p>[MOCK DATA — Switch to Live Mode for real AI-generated content. Ships from superspotdeals.com.]</p>`,
+    categories:        `Electronics > ${schema.name}`,
+    tags:              `${vendor},${id},${schema.name},IT hardware,${vendor.toLowerCase()},superspotdeals`,
+    yoast_meta_desc:   `Buy ${vendor} ${id} at superspotdeals.com. ${p.desc.substring(0,80).replace(/retail/gi,'')}. In stock now.`.substring(0,160),
+    image_url:         `https://placehold.co/800x600/1a1d24/00d4ff?text=${encodeURIComponent(vendor+'\n'+id)}`,
+    image_alt:         `${vendor} ${id} - ${schema.name}`,
+    attrs,
+    attributes:        attrs,
+  };
+}
+
+// ─── BUILD WOO ROW ───────────────────────────────
+function buildRow(p, parsed) {
   const row = {};
-  WOO_COLUMNS.forEach(c => row[c] = '');
+  WOO_COLS.forEach(c => row[c] = '');
 
-  row['Type'] = 'simple';
-  row['SKU'] = p.itemid || p.sku;
+  row['Type']                    = 'simple';
+  row['SKU']                     = p.itemid || p.sku;
   row['GTIN, UPC, EAN, or ISBN'] = p.upc || '';
-  row['Name'] = parsed.name || p.description;
-  row['Slug'] = parsed.slug || buildSlug(p.vendor, p.itemid || p.sku, '');
-  row['Published'] = 0;
-  row['Is featured?'] = 0;
-  row['Visibility in catalog'] = 'visible';
-  row['Short description'] = parsed.short_description || '';
-  row['Description'] = parsed.description || '';
-  row['Tax status'] = 'taxable';
-  row['In stock?'] = 1;
-  row['Stock'] = '';
-  row['Backorders allowed?'] = 0;
-  row['Sold individually?'] = 0;
+  row['Name']                    = parsed.name || p.desc;
+  row['Slug']                    = parsed.slug || makeSlug(p.vendor + ' ' + (p.itemid||p.sku));
+  row['Published']               = 0;
+  row['Is featured?']            = 0;
+  row['Visibility in catalog']   = 'visible';
+  row['Short description']       = parsed.short_description || '';
+  row['Description']             = parsed.description || '';
+  row['Tax status']              = 'taxable';
+  row['In stock?']               = 1;
+  row['Backorders allowed?']     = 0;
+  row['Sold individually?']      = 0;
   row['Allow customer reviews?'] = 1;
-  row['Regular price'] = p.retail.toFixed(2);
-  row['Sale price'] = '';
-  row['Categories'] = parsed.categories || '';
-  row['Tags'] = parsed.tags || '';
-  row['Brands'] = p.vendor || '';
-
-  // Images — prefer feed-provided URL, then AI-found URL
-  const imgUrl = p.imageUrl || parsed.image_url || '';
-  row['Images'] = imgUrl;
-
+  row['Regular price']           = p.retail.toFixed(2);
+  row['Categories']              = parsed.categories || '';
+  row['Tags']                    = parsed.tags || '';
+  row['Brands']                  = p.vendor || '';
+  row['Images']                  = p.imgurl || parsed.image_url || '';
   if (p.weight) row['Weight (lbs)'] = p.weight;
-  if (p.length) row['Length (in)'] = p.length;
-  if (p.width)  row['Width (in)']  = p.width;
-  if (p.height) row['Height (in)'] = p.height;
+  if (p.length) row['Length (in)']  = p.length;
+  if (p.width)  row['Width (in)']   = p.width;
+  if (p.height) row['Height (in)']  = p.height;
 
-  row['Meta: _manufacturer_pn'] = p.itemid || p.sku;
-  row['Meta: _vendor'] = p.vendor || '';
-  row['Meta: _map_price'] = p.map > 0 ? p.map.toFixed(2) : '';
-  row['Meta: _yoast_wpseo_metadesc'] = parsed.yoast_meta_desc || '';
-  // Support both old and new JSON key names
-  row['Meta: _yoast_wpseo_focuskw'] = parsed.focus_kw || parsed.yoast_focus_kw || '';
-  row['Meta: _wc_gla_gtin'] = p.upc || '';
-  row['Meta: _wc_gla_mpn'] = p.itemid || p.sku;
-  row['Meta: _wc_gla_brand'] = p.vendor || '';
-  row['Meta: _wc_gla_condition'] = 'new';
-  row['Meta: _yoast_wpseo_primary_product_cat'] = (parsed.categories || '').split('>').pop().trim();
+  row['Meta: _manufacturer_pn']              = p.itemid || p.sku;
+  row['Meta: _vendor']                       = p.vendor || '';
+  row['Meta: _map_price']                    = p.map > 0 ? p.map.toFixed(2) : '';
+  row['Meta: _yoast_wpseo_metadesc']         = parsed.yoast_meta_desc || '';
+  row['Meta: _yoast_wpseo_focuskw']          = parsed.focus_kw || '';
+  row['Meta: _wc_gla_gtin']                  = p.upc || '';
+  row['Meta: _wc_gla_mpn']                   = p.itemid || p.sku;
+  row['Meta: _wc_gla_brand']                 = p.vendor || '';
+  row['Meta: _wc_gla_condition']             = 'new';
+  row['Meta: _yoast_wpseo_primary_product_cat'] = (parsed.categories||'').split('>').pop().trim();
+  row['Image ALT Text (reference)']          = parsed.image_alt || `${p.vendor} ${parsed.name||p.desc}`;
 
-  // Image ALT text reference column
-  row['Image ALT Text (reference)'] = parsed.image_alt || `${p.vendor} ${parsed.name || p.description}`;
-
-  const attrs = (parsed.attributes || []).slice(0, 20);
-  attrs.forEach((attr, idx) => {
-    const n = idx + 1;
-    row[`Attribute ${n} name`] = attr.name || '';
-    row[`Attribute ${n} value(s)`] = attr.value || '';
-    row[`Attribute ${n} visible`] = 1;
-    row[`Attribute ${n} global`] = 0;
+  (parsed.attributes||[]).slice(0,20).forEach((a,n) => {
+    row[`Attribute ${n+1} name`]     = a.name || '';
+    row[`Attribute ${n+1} value(s)`] = a.value || '';
+    row[`Attribute ${n+1} visible`]  = 1;
+    row[`Attribute ${n+1} global`]   = 0;
   });
 
   return row;
 }
 
-// ─────────────────────────────────────────────────
-// DOWNLOAD
-// ─────────────────────────────────────────────────
+// ─── DOWNLOAD ────────────────────────────────────
 function downloadOutput() {
   if (!results.length) return;
-  const ws = XLSX.utils.json_to_sheet(results, { header: WOO_COLUMNS });
-  // Auto-width columns
-  const colWidths = WOO_COLUMNS.map(c => ({ wch: Math.min(Math.max(c.length, 10), 40) }));
-  ws['!cols'] = colWidths;
+  const ws = XLSX.utils.json_to_sheet(results, { header: WOO_COLS });
+  ws['!cols'] = WOO_COLS.map(c => ({ wch: Math.min(Math.max(c.length, 10), 40) }));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'WooCommerce Import');
   const date = new Date().toISOString().slice(0,10);
-  const isMock = document.getElementById('mockToggle').checked;
-  XLSX.writeFile(wb, `woo-import-${isMock?'MOCK-':''}${date}.xlsx`);
-  log('success','⬇',`Downloaded ${results.length} products`);
+  XLSX.writeFile(wb, `woo-import-${mockOn?'MOCK-':''}${date}.xlsx`);
+  addLog('ok','⬇',`Downloaded ${results.length} products`);
 }
 
 function downloadFailed() {
-  if (!failedProducts.length) return;
-  const rows = failedProducts.map(p => ({
-    ITEMID: p.itemid||p.sku, DESCRIPTION: p.description, VENDOR: p.vendor,
-    'Vendor Website': p.vendorUrl, PRICE: p.price, MAP: p.map, 'UPC/EAN': p.upc,
-  }));
+  if (!failed.length) return;
+  const rows = failed.map(p => ({ ITEMID: p.itemid||p.sku, DESCRIPTION: p.desc, VENDOR: p.vendor, 'Vendor Website': p.url, PRICE: p.cost, MAP: p.map, 'UPC/EAN': p.upc }));
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Failed');
   XLSX.writeFile(wb, `failed-${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
-// ─────────────────────────────────────────────────
-// PREVIEW
-// ─────────────────────────────────────────────────
-function updatePreview(row, isMock) {
+// ─── PREVIEW ─────────────────────────────────────
+function showPreview(row, isMock) {
   const attrs = [];
   for (let i = 1; i <= 20; i++) {
     const n = row[`Attribute ${i} name`], v = row[`Attribute ${i} value(s)`];
     if (n) attrs.push(`<tr><td style="color:var(--muted);padding:7px 14px;border-bottom:1px solid var(--border);white-space:nowrap;font-size:11px">${esc(n)}</td><td style="padding:7px 14px;border-bottom:1px solid var(--border);font-size:12px">${esc(String(v))}</td></tr>`);
   }
-  const imgUrl = row['Images'];
-  const focusKw = row['Meta: _yoast_wpseo_focuskw'];
-  const slug = row['Slug'];
-  const altText = row['Image ALT Text (reference)'];
-  const mockBanner = isMock ? `<div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:10px 14px;font-size:12px;color:var(--orange);margin-bottom:14px;">🧪 Mock data — structure is correct, content is placeholder. Switch to Live Mode for real AI-generated content.</div>` : '';
+  const fkw   = row['Meta: _yoast_wpseo_focuskw'] || '';
+  const slug  = row['Slug'] || '';
+  const imgUrl = row['Images'] || '';
+  const altTxt = row['Image ALT Text (reference)'] || '';
+  const meta  = row['Meta: _yoast_wpseo_metadesc'] || '';
 
-  // Check if focus KW appears in all required places (Yoast alignment check)
-  const fkw = (focusKw || '').toLowerCase();
-  const titleHasFkw = fkw && row['Name'].toLowerCase().includes(fkw);
-  const shortHasFkw = fkw && row['Short description'].toLowerCase().includes(fkw);
-  const metaHasFkw  = fkw && row['Meta: _yoast_wpseo_metadesc'].toLowerCase().includes(fkw);
-  const seoScore = [titleHasFkw, shortHasFkw, metaHasFkw].filter(Boolean).length;
-  const seoColor = seoScore === 3 ? 'var(--green)' : seoScore >= 1 ? 'var(--yellow)' : 'var(--red)';
-  const seoLabel = isMock ? '— (mock)' : `${seoScore}/3 fields contain focus KW`;
+  const titleOk = fkw && row['Name'].toLowerCase().includes(fkw.toLowerCase());
+  const shortOk = fkw && row['Short description'].toLowerCase().includes(fkw.toLowerCase());
+  const metaOk  = fkw && meta.toLowerCase().includes(fkw.toLowerCase());
+  const score   = [titleOk,shortOk,metaOk].filter(Boolean).length;
+  const scoreColor = isMock ? 'var(--muted)' : score===3 ? 'var(--green)' : score>=1 ? 'var(--yellow)' : 'var(--red)';
 
   document.getElementById('previewContent').innerHTML = `
     <div style="padding:20px;overflow-y:auto;height:100%">
-      ${mockBanner}
-
+      ${isMock?`<div style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.3);border-radius:6px;padding:10px;font-size:12px;color:var(--orange);margin-bottom:14px">🧪 Mock data — structure correct, content is placeholder. Use Live Mode for real content.</div>`:''}
       <h2 style="font-size:15px;margin-bottom:4px;line-height:1.4">${esc(row['Name'])}</h2>
       <div style="font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:16px">/products/${esc(slug)}</div>
-
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-        ${[
-          ['SKU', row['SKU'], 'var(--accent)'],
-          ['Price', '$'+row['Regular price'], 'var(--green)'],
-          ['MAP', row['Meta: _map_price'] ? '$'+row['Meta: _map_price'] : 'markup', 'var(--yellow)'],
-          ['Status', 'Draft', 'var(--muted)']
-        ].map(([l,v,c])=>`
-        <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px">
-          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">${l}</div>
-          <div style="font-family:var(--mono);font-size:12px;color:${c}">${esc(String(v))}</div>
-        </div>`).join('')}
+        ${[['SKU',row['SKU'],'var(--accent)'],['Price','$'+row['Regular price'],'var(--green)'],['MAP',row['Meta: _map_price']?'$'+row['Meta: _map_price']:'markup','var(--yellow)'],['Status','Draft','var(--muted)']].map(([l,v,c])=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:10px"><div style="font-size:10px;color:var(--muted);margin-bottom:4px">${l}</div><div style="font-family:var(--mono);font-size:12px;color:${c}">${esc(String(v))}</div></div>`).join('')}
       </div>
-
-      <!-- SEO HEALTH PANEL -->
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;letter-spacing:1px">SEO HEALTH CHECK</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px">SEO HEALTH</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-          <div>
-            <div style="font-size:10px;color:var(--muted);margin-bottom:3px">FOCUS KEYPHRASE</div>
-            <div style="font-family:var(--mono);font-size:12px;color:var(--accent)">${esc(focusKw || '—')}</div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--muted);margin-bottom:3px">YOAST ALIGNMENT</div>
-            <div style="font-size:12px;color:${seoColor}">${seoLabel}</div>
-          </div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">FOCUS KEYPHRASE</div><div style="font-family:var(--mono);font-size:12px;color:var(--accent)">${esc(fkw||'—')}</div></div>
+          <div><div style="font-size:10px;color:var(--muted);margin-bottom:3px">YOAST SCORE</div><div style="font-size:12px;color:${scoreColor}">${isMock?'— (mock)':score+'/3 fields'}</div></div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px">
-          ${[
-            ['Title', titleHasFkw],
-            ['Short Desc', shortHasFkw],
-            ['Meta Desc', metaHasFkw]
-          ].map(([l, pass]) => `
-          <div style="background:var(--surface2);border-radius:4px;padding:6px 8px;display:flex;align-items:center;gap:6px">
-            <span style="color:${isMock ? 'var(--muted)' : pass ? 'var(--green)' : 'var(--red)'}">${isMock ? '—' : pass ? '✓' : '✗'}</span>
-            <span style="color:var(--muted)">${l}</span>
-          </div>`).join('')}
+          ${[['Title',titleOk],['Short Desc',shortOk],['Meta Desc',metaOk]].map(([l,ok])=>`<div style="background:var(--surface2);border-radius:4px;padding:6px 8px;display:flex;align-items:center;gap:6px"><span style="color:${isMock?'var(--muted)':ok?'var(--green)':'var(--red)'}">${isMock?'—':ok?'✓':'✗'}</span><span style="color:var(--muted)">${l}</span></div>`).join('')}
         </div>
       </div>
-
-      ${imgUrl ? `<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <div style="font-size:10px;color:var(--muted)">IMAGE URL</div>
-          <div style="font-size:10px;color:var(--muted)">ALT: ${esc(altText||'')}</div>
-        </div>
-        <a href="${esc(imgUrl)}" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all">${esc(imgUrl)}</a>
-      </div>` : `<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px;opacity:0.5">
-        <div style="font-size:11px;color:var(--muted)">⚠️ No image URL — add Vendor Website column for image extraction in Live Mode</div>
-      </div>`}
-
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">META DESCRIPTION <span style="float:right">${esc(String(row['Meta: _yoast_wpseo_metadesc']||'').length)} chars</span></div>
-        <div style="font-size:12px;color:var(--text);line-height:1.6;font-style:italic">"${esc(row['Meta: _yoast_wpseo_metadesc'])}"</div>
-      </div>
-
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">SHORT DESCRIPTION</div>
-        <div style="font-size:12px;line-height:1.7">${row['Short description']}</div>
-      </div>
-
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">TAGS</div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px">
-          ${(row['Tags']||'').split(',').map(t=>`<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;font-family:var(--mono)">${esc(t.trim())}</span>`).join('')}
-        </div>
-      </div>
-
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:14px">
-        <div style="font-size:10px;color:var(--muted);padding:12px 14px 8px">ATTRIBUTES (${attrs.length})</div>
-        <table style="width:100%;border-collapse:collapse">${attrs.join('')}</table>
-      </div>
-
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px">
-        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">LONG DESCRIPTION PREVIEW</div>
-        <div style="font-size:12px;line-height:1.7;max-height:300px;overflow-y:auto">${row['Description']}</div>
-      </div>
-    </div>
-  `;
+      ${imgUrl?`<div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px"><div style="font-size:10px;color:var(--muted);margin-bottom:6px">IMAGE  <span style="float:right;color:var(--muted)">ALT: ${esc(altTxt)}</span></div><a href="${esc(imgUrl)}" target="_blank" style="font-family:var(--mono);font-size:11px;color:var(--accent);word-break:break-all">${esc(imgUrl)}</a></div>`:''}
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px"><div style="font-size:10px;color:var(--muted);margin-bottom:6px">META DESCRIPTION <span style="float:right">${esc(String(meta).length)} chars</span></div><div style="font-size:12px;font-style:italic;line-height:1.6">"${esc(meta)}"</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px"><div style="font-size:10px;color:var(--muted);margin-bottom:8px">SHORT DESCRIPTION</div><div style="font-size:12px;line-height:1.7">${row['Short description']}</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:14px"><div style="font-size:10px;color:var(--muted);margin-bottom:8px">TAGS</div><div style="display:flex;flex-wrap:wrap;gap:6px">${(row['Tags']||'').split(',').map(t=>`<span style="background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:2px 8px;font-size:11px;font-family:var(--mono)">${esc(t.trim())}</span>`).join('')}</div></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;margin-bottom:14px"><div style="font-size:10px;color:var(--muted);padding:12px 14px 8px">ATTRIBUTES (${attrs.length})</div><table style="width:100%;border-collapse:collapse">${attrs.join('')}</table></div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px"><div style="font-size:10px;color:var(--muted);margin-bottom:8px">LONG DESCRIPTION</div><div style="font-size:12px;line-height:1.7;max-height:300px;overflow-y:auto">${row['Description']}</div></div>
+    </div>`;
 }
 
-// ─────────────────────────────────────────────────
-// UI HELPERS
-// ─────────────────────────────────────────────────
+// ─── UI HELPERS ──────────────────────────────────
 function clearLog() {
   document.getElementById('logWrap').innerHTML = '';
   logEmpty = false;
 }
 
-function log(type, icon, msg) {
+function addLog(type, icon, msg) {
   if (logEmpty) { document.getElementById('logWrap').innerHTML = ''; logEmpty = false; }
   const wrap = document.getElementById('logWrap');
   const time = new Date().toTimeString().slice(0,8);
-  const div = document.createElement('div');
-  div.className = `log-entry log-${type}`;
-  div.innerHTML = `<span class="log-time">${time}</span><span class="log-icon">${icon}</span><span class="log-msg">${esc(msg)}</span>`;
-  wrap.appendChild(div);
+  const d = document.createElement('div');
+  d.className = 'logrow log-' + type;
+  d.innerHTML = `<span class="t">${time}</span><span style="min-width:16px">${icon}</span><span class="m">${esc(msg)}</span>`;
+  wrap.appendChild(d);
   wrap.scrollTop = wrap.scrollHeight;
 }
 
-function updateProgress(done, total) {
-  const pct = total > 0 ? Math.round((done/total)*100) : 0;
-  document.getElementById('progressBar').style.width = pct + '%';
-  document.getElementById('progressText').textContent = `${done} / ${total} — ${pct}%`;
+function setProgress(done, total) {
+  const pct = total > 0 ? Math.round(done/total*100) : 0;
+  document.getElementById('progBar').style.width = pct + '%';
+  document.getElementById('progText').textContent = `${done} / ${total} — ${pct}%`;
 }
 
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['log','queue','preview','schema'][i] === tab);
-  });
-  document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-  document.getElementById(`tab-${tab}`).classList.add('active');
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  event.target.classList.add('on');
+  document.getElementById('panel-' + name).classList.add('on');
 }
 
 function resetAll() {
-  if (isRunning) { alert('Stop processing first.'); return; }
-  products = []; results = []; failedProducts = [];
+  if (running) { alert('Stop processing first.'); return; }
+  products = []; results = []; failed = [];
   fileInput.value = '';
-  document.getElementById('fileName').textContent = '';
-  ['statTotal','statDone','statFailed','statSkip'].forEach(id => document.getElementById(id).textContent = 0);
-  document.getElementById('progressBar').style.width = '0%';
-  document.getElementById('progressText').textContent = 'Ready';
+  document.getElementById('uploadName').textContent = '';
+  ['statTotal','statDone','statFail','statSkip'].forEach(id => document.getElementById(id).textContent = 0);
+  document.getElementById('progBar').style.width = '0%';
+  document.getElementById('progText').textContent = 'Ready';
   document.getElementById('queueBody').innerHTML = '';
   document.getElementById('queueEmpty').style.display = '';
   document.getElementById('queueTable').style.display = 'none';
   document.getElementById('btnStart').disabled = true;
   document.getElementById('btnDownload').disabled = true;
-  document.getElementById('btnDownloadFailed').disabled = true;
-  document.getElementById('logWrap').innerHTML = '<div class="empty-state"><div class="empty-icon">🚀</div><div>Upload an ASI feed and click Generate to begin</div></div>';
+  document.getElementById('btnFailed').disabled = true;
+  document.getElementById('logWrap').innerHTML = '<div class="empty"><div class="empty-icon">🚀</div><div>Upload an ASI feed and click Generate to begin</div></div>';
   logEmpty = true;
+}
+
+function makeSlug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9\s-]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').substring(0,60);
 }
 
 function esc(s) {
   return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
-function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-// Persist API key
-const keyInput = document.getElementById('apiKey');
-keyInput.value = sessionStorage.getItem('asi_api_key') || '';
-keyInput.addEventListener('input', () => sessionStorage.setItem('asi_api_key', keyInput.value));
+function str(v) { return String(v||'').trim(); }
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 </script>
 </body>
 </html>
